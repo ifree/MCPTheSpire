@@ -251,10 +251,17 @@ public class CommandExecutor {
         }
         AbstractMonster target_monster = null;
         if (monster_index != -1) {
-            if (monster_index < 0 || monster_index >= AbstractDungeon.getCurrRoom().monsters.monsters.size()) {
-                throw new InvalidCommandException(tokens, InvalidCommandException.InvalidCommandFormat.OUT_OF_BOUNDS, Integer.toString(monster_index));
+            // 获取活着的怪物列表
+            ArrayList<AbstractMonster> aliveMonsters = new ArrayList<>();
+            for(AbstractMonster monster : AbstractDungeon.getCurrRoom().monsters.monsters) {
+                if (!monster.isDeadOrEscaped()) {
+                    aliveMonsters.add(monster);
+                }
+            }
+            if (monster_index < 0 || monster_index >= aliveMonsters.size()) {
+                throw new InvalidCommandException(tokens, InvalidCommandException.InvalidCommandFormat.OUT_OF_BOUNDS, Integer.toString(monster_index + 1));
             } else {
-                target_monster = AbstractDungeon.getCurrRoom().monsters.monsters.get(monster_index);
+                target_monster = aliveMonsters.get(monster_index);
             }
         } else {
             for(AbstractMonster monster: AbstractDungeon.getCurrRoom().monsters.monsters) {
@@ -338,10 +345,17 @@ public class CommandExecutor {
                     } catch (NumberFormatException e) {
                         throw new InvalidCommandException(tokens, InvalidCommandException.InvalidCommandFormat.INVALID_ARGUMENT, tokens[3]);
                     }
-                    if (monster_index < 0 || monster_index >= AbstractDungeon.getCurrRoom().monsters.monsters.size()) {
-                        throw new InvalidCommandException(tokens, InvalidCommandException.InvalidCommandFormat.OUT_OF_BOUNDS, Integer.toString(monster_index));
+                    // 获取活着的怪物列表
+                    ArrayList<AbstractMonster> aliveMonsters = new ArrayList<>();
+                    for(AbstractMonster monster : AbstractDungeon.getCurrRoom().monsters.monsters) {
+                        if (!monster.isDeadOrEscaped()) {
+                            aliveMonsters.add(monster);
+                        }
+                    }
+                    if (monster_index < 0 || monster_index >= aliveMonsters.size()) {
+                        throw new InvalidCommandException(tokens, InvalidCommandException.InvalidCommandFormat.OUT_OF_BOUNDS, Integer.toString(monster_index + 1));
                     } else {
-                        target_monster = AbstractDungeon.getCurrRoom().monsters.monsters.get(monster_index);
+                        target_monster = aliveMonsters.get(monster_index);
                     }
                 } else {
                     for(AbstractMonster monster: AbstractDungeon.getCurrRoom().monsters.monsters) {

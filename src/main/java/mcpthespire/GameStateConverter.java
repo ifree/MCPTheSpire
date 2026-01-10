@@ -107,13 +107,15 @@ public class GameStateConverter {
 
                 ArrayList<Object> monsters = new ArrayList<>();
                 for(AbstractMonster monster : AbstractDungeon.getCurrRoom().monsters.monsters) {
-                    HashMap<String, Object> m = new HashMap<>();
-                    m.put("name", monster.name);
-                    m.put("current_hp", monster.currentHealth);
-                    m.put("max_hp", monster.maxHealth);
-                    m.put("intent", monster.intent.name());
-                    m.put("is_gone", monster.isDeadOrEscaped());
-                    monsters.add(m);
+                    if (!monster.isDeadOrEscaped()) {
+                        HashMap<String, Object> m = new HashMap<>();
+                        m.put("name", monster.name);
+                        m.put("current_hp", monster.currentHealth);
+                        m.put("max_hp", monster.maxHealth);
+                        m.put("intent", monster.intent.name());
+                        m.put("is_gone", monster.isDeadOrEscaped());
+                        monsters.add(m);
+                    }
                 }
                 response.put("monsters", monsters);
             }
@@ -506,7 +508,9 @@ public class GameStateConverter {
         HashMap<String, Object> state = new HashMap<>();
         ArrayList<Object> monsters = new ArrayList<>();
         for(AbstractMonster monster : AbstractDungeon.getCurrRoom().monsters.monsters) {
-            monsters.add(convertMonsterToJson(monster));
+            if (!monster.isDeadOrEscaped()) {
+                monsters.add(convertMonsterToJson(monster));
+            }
         }
         state.put("monsters", monsters);
         ArrayList<Object> draw_pile = new ArrayList<>();
