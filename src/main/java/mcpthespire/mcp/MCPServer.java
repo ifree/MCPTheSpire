@@ -506,7 +506,7 @@ public class MCPServer implements Runnable {
                     processedAction.addProperty("card_uuid", targetUuid.toString());
                     logger.info("Converted card_index " + originalIndex + " to card_uuid " + targetUuid);
                 }
-                // For choose with choice_index, convert to choice_name for stable resolution
+                // For choose with choice_index, resolve stable index by finding the original choice in current list
                 if ("choose".equals(actionType) && processedAction.has("choice_index") &&
                     !processedAction.get("choice_index").isJsonNull() && pendingBatch.initialChoiceList != null) {
                     int originalIndex = processedAction.get("choice_index").getAsInt();
@@ -518,16 +518,33 @@ public class MCPServer implements Runnable {
                             pendingBatch.initialChoiceList);
                     }
                     String choiceName = pendingBatch.initialChoiceList.get(originalIndex - 1);
-                    // Create modified action with choice_name instead of choice_index
+
+                    // Find this choice in the current list to get the updated index
+                    java.util.ArrayList<String> currentChoices = mcpthespire.ChoiceScreenUtils.getCurrentChoiceList();
+                    int newIndex = -1;
+                    for (int i = 0; i < currentChoices.size(); i++) {
+                        if (currentChoices.get(i).equals(choiceName)) {
+                            newIndex = i + 1;  // 1-indexed
+                            break;
+                        }
+                    }
+
+                    if (newIndex == -1) {
+                        throw new mcpthespire.InvalidCommandException(
+                            "Choice no longer available: " + choiceName +
+                            ". Current choices: " + currentChoices);
+                    }
+
+                    // Update choice_index to the new resolved index
                     JsonObject chooseAction = new JsonObject();
                     for (Map.Entry<String, com.google.gson.JsonElement> entry : processedAction.entrySet()) {
                         if (!"choice_index".equals(entry.getKey())) {
                             chooseAction.add(entry.getKey(), entry.getValue());
                         }
                     }
-                    chooseAction.addProperty("choice_name", choiceName);
+                    chooseAction.addProperty("choice_index", newIndex);
                     processedAction = chooseAction;
-                    logger.info("Converted choice_index " + originalIndex + " to choice_name: " + choiceName);
+                    logger.info("Resolved choice_index " + originalIndex + " -> " + newIndex + " (choice: " + choiceName + ")");
                 }
 
                 // For select_cards with indices in drop/keep, convert to UUIDs for stable resolution
