@@ -5,7 +5,7 @@
 
     <groupId>mcpthespire</groupId>
     <artifactId>MCPTheSpire</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
     <name>MCP The Spire</name>
     <description>This mod allows AI agents to play the game via Model Context Protocol (MCP)</description>
