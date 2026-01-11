@@ -4,6 +4,7 @@ import basemod.ReflectionHacks;
 import com.megacrit.cardcrawl.actions.GameActionManager;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.helpers.CardLibrary;
+import com.megacrit.cardcrawl.helpers.RelicLibrary;
 import com.megacrit.cardcrawl.characters.AbstractPlayer;
 import com.megacrit.cardcrawl.core.AbstractCreature;
 import com.megacrit.cardcrawl.core.Settings;
@@ -103,7 +104,8 @@ public class GameStateConverter {
                     hand.add(convertCardToJson(card));
                 }
                 response.put("hand", hand);
-                response.put("energy", AbstractDungeon.player.energy.energy);
+                response.put("current_energy", EnergyPanel.totalCount);
+                response.put("max_energy", AbstractDungeon.player.energy.energy);
 
                 ArrayList<Object> monsters = new ArrayList<>();
                 for(AbstractMonster monster : AbstractDungeon.getCurrRoom().monsters.monsters) {
@@ -163,6 +165,30 @@ public class GameStateConverter {
         if (upgraded.baseBlock != card.baseBlock) upgradedInfo.put("base_block", upgraded.baseBlock);
         if (upgraded.baseMagicNumber != card.baseMagicNumber) upgradedInfo.put("base_magic_number", upgraded.baseMagicNumber);
         result.put("upgraded", upgradedInfo);
+
+        return result;
+    }
+
+    /**
+     * Get detailed relic information by relic ID.
+     * Returns relic description, tier, and other details.
+     */
+    public static HashMap<String, Object> getRelicInfo(String relicId) {
+        HashMap<String, Object> result = new HashMap<>();
+        AbstractRelic relic = RelicLibrary.getRelic(relicId);
+        if (relic == null) {
+            result.put("error", "Relic not found: " + relicId);
+            return result;
+        }
+        result.put("id", relic.relicId);
+        result.put("name", relic.name);
+        result.put("tier", relic.tier.name());
+        result.put("description", relic.description);
+        if (relic.flavorText != null && !relic.flavorText.isEmpty()) {
+            result.put("flavor_text", relic.flavorText);
+        }
+        // Counter info: -1 = unused, -2 = special state, >= 0 = active counter
+        result.put("counter_type", relic.counter == -1 ? "none" : (relic.counter == -2 ? "special" : "numeric"));
 
         return result;
     }
@@ -706,7 +732,8 @@ public class GameStateConverter {
         // Essential fields
         jsonPlayer.put("current_hp", player.currentHealth);
         jsonPlayer.put("max_hp", player.maxHealth);
-        jsonPlayer.put("energy", EnergyPanel.totalCount);
+        jsonPlayer.put("current_energy", EnergyPanel.totalCount);
+        jsonPlayer.put("max_energy", player.energy.energy);
 
         // Conditional fields
         if (player.currentBlock > 0) {

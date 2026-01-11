@@ -32,7 +32,8 @@ public class MCPToolHandler {
         "get_game_state",
         "get_screen_state",
         "get_available_commands",
-        "get_card_info"
+        "get_card_info",
+        "get_relic_info"
     ));
 
     /**
@@ -86,6 +87,19 @@ public class MCPToolHandler {
             "get_card_info",
             "Get detailed card info (description, stats, upgraded version). Use when you need to know what a card does.",
             MCPProtocol.createInputSchema(cardInfoProps, Arrays.asList("card_ids"))
+        ));
+
+        // get_relic_info - Get detailed relic information
+        Map<String, Object> relicInfoProps = new HashMap<>();
+        Map<String, Object> relicIdsProp = new HashMap<>();
+        relicIdsProp.put("type", "array");
+        relicIdsProp.put("items", MCPProtocol.createProperty("string", "Relic ID"));
+        relicIdsProp.put("description", "Relic IDs to query (e.g., [\"Burning Blood\", \"Vajra\", \"Snecko Eye\"])");
+        relicInfoProps.put("relic_ids", relicIdsProp);
+        tools.add(MCPProtocol.createToolDefinition(
+            "get_relic_info",
+            "Get detailed relic info (description, tier, flavor text). Use when you need to know what a relic does.",
+            MCPProtocol.createInputSchema(relicInfoProps, Arrays.asList("relic_ids"))
         ));
 
         // execute_actions - PREFERRED for multiple actions
@@ -250,6 +264,9 @@ public class MCPToolHandler {
 
                 case "get_card_info":
                     return executeGetCardInfo(arguments);
+
+                case "get_relic_info":
+                    return executeGetRelicInfo(arguments);
 
                 case "play_card":
                     return executePlayCard(arguments);
@@ -423,6 +440,21 @@ public class MCPToolHandler {
         }
 
         result.put("cards", cards);
+        return MCPProtocol.buildToolCallResultJson(result);
+    }
+
+    private Map<String, Object> executeGetRelicInfo(JsonObject args) {
+        Map<String, Object> result = new HashMap<>();
+        List<Object> relics = new ArrayList<>();
+
+        if (args != null && args.has("relic_ids") && args.get("relic_ids").isJsonArray()) {
+            for (com.google.gson.JsonElement elem : args.getAsJsonArray("relic_ids")) {
+                String relicId = elem.getAsString();
+                relics.add(GameStateConverter.getRelicInfo(relicId));
+            }
+        }
+
+        result.put("relics", relics);
         return MCPProtocol.buildToolCallResultJson(result);
     }
 
