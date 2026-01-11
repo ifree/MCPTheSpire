@@ -192,7 +192,14 @@ public class MCPTheSpire implements PostInitializeSubscriber, PostUpdateSubscrib
             settingsPanel, modLabel -> {});
         settingsPanel.addUIElement(configNote);
 
-        BaseMod.registerModBadge(ImageMaster.loadImage("icon.png"), "MCP The Spire", "ifree",
+        com.badlogic.gdx.graphics.Texture badgeTexture;
+        try {
+            badgeTexture = ImageMaster.loadImage("icon.png");
+        } catch (Exception e) {
+            badgeTexture = ImageMaster.loadImage("img/BlankCardSmall.png");
+            logger.warn("Could not load mod icon, using default");
+        }
+        BaseMod.registerModBadge(badgeTexture, "MCP The Spire", "ifree",
             "Allows AI agents to play via MCP protocol", settingsPanel);
     }
 
