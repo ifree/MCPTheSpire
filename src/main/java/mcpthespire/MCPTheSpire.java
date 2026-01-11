@@ -194,7 +194,7 @@ public class MCPTheSpire implements PostInitializeSubscriber, PostUpdateSubscrib
 
         com.badlogic.gdx.graphics.Texture badgeTexture;
         try {
-            badgeTexture = ImageMaster.loadImage("icon.png");
+            badgeTexture = ImageMaster.loadImage("badge.png");
         } catch (Exception e) {
             badgeTexture = ImageMaster.loadImage("img/BlankCardSmall.png");
             logger.warn("Could not load mod icon, using default");
